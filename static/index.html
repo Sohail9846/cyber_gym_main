@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Attack Simulation Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.5.0/xterm.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.5.0/xterm.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+        body {
+            background: #000000;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(20, 20, 40, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(40, 20, 40, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(20, 40, 20, 0.15) 0%, transparent 50%);
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(15, 15, 25, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .terminal-glass {
+            background: rgba(8, 8, 12, 0.9);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-card {
+            background: rgba(20, 20, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(25, 25, 35, 0.7);
+        }
+
+        .terminal-container {
+            background: #0a0a0a !important;
+        }
+
+        .xterm-viewport {
+            background: #0a0a0a !important;
+        }
+
+        /* Custom Ubuntu terminal theme - authentic colors */
+        .xterm-screen {
+            background: #0a0a0a;
+        }
+
+        .header-glow {
+            background: linear-gradient(135deg, rgba(30, 30, 50, 0.9), rgba(20, 20, 40, 0.9));
+            backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-online {
+            color: #00ff88;
+            text-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+        }
+
+        .status-offline {
+            color: #ff4444;
+            text-shadow: 0 0 8px rgba(255, 68, 68, 0.3);
+        }
+
+        .brand-accent {
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .pulse-dot {
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="header-glow sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                            <span class="text-black font-bold text-sm">SG</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold brand-accent">CyberGym</h1>
+                            <p class="text-xs text-gray-400 font-mono">Training and learning platform</p>
+                        </div>
+                    </div>
+                    <div class="hidden md:flex items-center gap-4 text-sm text-gray-400">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></div>
+                            <span>Systems Online</span>
+                        </div>
+                        <div class="w-px h-4 bg-gray-600"></div>
+                        <span id="uptime" class="font-mono">Uptime: --:--:--</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <nav class="hidden md:flex items-center gap-3">
+                        <a href="/config" class="text-sm text-blue-400 hover:underline">Configure VMs</a>
+                        <span class="text-slate-600">|</span>
+                        <a href="/debug" class="text-sm text-purple-400 hover:underline">Debug</a>
+                    </nav>
+                    <div class="text-xs text-gray-500 font-mono" id="timestamp"></div>
+                    <div class="hidden sm:block px-3 py-1 rounded-full bg-gray-800/50 text-xs text-gray-400 border border-gray-700">
+                        v2.1.0
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden bg-gradient-to-b from-slate-900 via-black to-black border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+            <div class="grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                    <h2 class="text-3xl md:text-5xl font-extrabold leading-tight text-white">
+                        Cybersecurity Attack Simulation Lab
+                    </h2>
+                    <p class="mt-4 text-slate-300 text-lg">
+                        Practice real-world cyber ranges with live terminals, AI-powered log analysis, and automated attack scenarios. Dark, fast, and built for SOC training.
+                    </p>
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="#terminals" class="px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white">Access Terminals</a>
+                        <a href="#how-it-works" class="px-5 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">How it works</a>
+                        <a href="/config" class="px-5 py-3 rounded-lg bg-red-600 hover:bg-red-500 text-white">Configure VMs</a>
+                    </div>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div class="p-4 rounded-lg bg-slate-800/60">
+                            <div class="text-3xl font-mono text-blue-400">2</div>
+                            <div class="text-xs text-slate-400">Live VM Terminals</div>
+                        </div>
+                        <div class="p-4 rounded-lg bg-slate-800/60">
+                            <div class="text-3xl font-mono text-red-400">AI</div>
+                            <div class="text-xs text-slate-400">Real-time Analysis</div>
+                        </div>
+                        <div class="p-4 rounded-lg bg-slate-800/60">
+                            <div class="text-3xl font-mono text-purple-400">24/7</div>
+                            <div class="text-xs text-slate-400">Simulation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="max-w-7xl mx-auto px-6 py-12" id="features">
+        <h3 class="text-2xl font-bold text-white mb-6">Platform Features</h3>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+                <div class="text-blue-400 font-semibold mb-2">Real-time VM terminals</div>
+                <p class="text-slate-300 text-sm">Interact with isolated VM terminals directly in your browser with secure WebSockets and live metrics.</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+                <div class="text-red-400 font-semibold mb-2">AI-powered log analysis</div>
+                <p class="text-slate-300 text-sm">Google Gemini analyzes commands and logs as you type—highlighting attacks and recommending responses.</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+                <div class="text-purple-400 font-semibold mb-2">Automated attack scenarios</div>
+                <p class="text-slate-300 text-sm">Trigger port scans, brute force simulations, and more to create realistic SOC training exercises.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="max-w-7xl mx-auto px-6 py-12" id="how-it-works">
+        <h3 class="text-2xl font-bold text-white mb-6">How it works</h3>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+                <div class="text-slate-400 text-sm mb-2">Step 1</div>
+                <div class="text-white font-semibold">Open terminals</div>
+                <p class="text-slate-300 text-sm mt-2">Connect to victim/attacker VMs with one click.</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+                <div class="text-slate-400 text-sm mb-2">Step 2</div>
+                <div class="text-white font-semibold">Run scenarios</div>
+                <p class="text-slate-300 text-sm mt-2">Use predefined buttons to launch attacks or run defense commands.</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+                <div class="text-slate-400 text-sm mb-2">Step 3</div>
+                <div class="text-white font-semibold">Review AI analysis</div>
+                <p class="text-slate-300 text-sm mt-2">See live Gemini analysis, detections, and recommendations.</p>
+            </div>
+        </div>
+        <div class="mt-8">
+            <a href="#terminals" class="px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white">Access Terminals</a>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <main id="terminals" class="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        <!-- VM1 Section -->
+        <section class="space-y-4">
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <!-- VM Header -->
+                <div class="px-6 py-4 border-b border-gray-800/50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <h2 class="text-lg font-semibold text-white"></h2>
+                            <div class="flex items-center gap-2 text-sm">
+                                <div id="vm1-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></div>
+                                <span id="vm1-status-text" class="text-gray-400">Initializing...</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="text-xs text-gray-500 font-mono"></span>
+                            <span class="text-xs text-gray-500"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Row -->
+                <div class="px-6 py-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">CPU</div>
+                            <div id="vm1-cpu" class="text-2xl font-mono font-medium text-white">0%</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Memory</div>
+                            <div id="vm1-memory" class="text-2xl font-mono font-medium text-white">0%</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Storage</div>
+                            <div id="vm1-disk" class="text-2xl font-mono font-medium text-white">0%</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Load Avg</div>
+                            <div id="vm1-load" class="text-2xl font-mono font-medium text-white">0.00</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VM1 Terminal -->
+            <div class="terminal-glass rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800/30">
+                    <div class="flex items-center gap-3">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        </div>
+                        <span class="text-sm text-gray-400 font-mono"></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="text-xs px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700" onclick="toggleSettings('vm1')">Settings</button>
+                        <div class="text-xs text-gray-500 font-mono">SSH Session Active</div>
+                    </div>
+                </div>
+<div id="vm1-settings" class="hidden px-4 py-3 border-b border-gray-800/30 bg-slate-900/40">
+                    <div class="flex flex-wrap items-center gap-4 text-sm">
+                        <label class="inline-flex items-center gap-2"><input id="vm1-autoScroll" type="checkbox" class="accent-blue-500" checked>Auto-scroll</label>
+                        <label class="inline-flex items-center gap-2">Scrollback <input id="vm1-scrollback" type="number" min="200" max="10000" value="2000" class="w-24 px-2 py-1 bg-black border border-slate-700 rounded"></label>
+<label class="inline-flex items-center gap-2"><input id="vm1-cursorBlink" type="checkbox" class="accent-blue-500">Cursor blink</label>
+                        <button class="px-2 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white" onclick="applySettings('vm1')">Apply</button>
+                        <button class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white" onclick="scrollToBottom('vm1')">Scroll to bottom</button>
+                    </div>
+                    <div class="mt-3 text-xs text-slate-400">Quick Connect (runtime only)</div>
+                    <div class="mt-2 grid md:grid-cols-4 gap-2 text-sm">
+                        <input id="vm1-qc-host" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Host/IP">
+                        <input id="vm1-qc-user" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Username">
+                        <input id="vm1-qc-pass" type="password" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Password">
+                        <input id="vm1-qc-port" type="number" value="22" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Port">
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                        <button class="px-2 py-1 rounded bg-green-600 hover:bg-green-500 text-white text-sm" onclick="quickConnect('vm1')">Connect</button>
+                        <button class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="fillQuickConnect('vm1')">Load last</button>
+                    </div>
+                </div>
+                <div class="terminal-container h-96" id="vm1-terminal"></div>
+            </div>
+
+            <!-- VM1 Actions -->
+            <div class="mt-4 grid md:grid-cols-3 gap-3">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Attack Scenarios</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm" onclick="sendPredefinedCommand('vm1','port_scan', this)">Port Scan</button>
+                        <button class="px-3 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm" onclick="sendPredefinedCommand('vm1','brute_force', this)">Brute Force</button>
+                        <button class="px-3 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm" onclick="sendPredefinedCommand('vm1','dir_enum', this)">Dir Enum</button>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Defensive</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm" onclick="sendPredefinedCommand('vm1','check_logs', this)">Check logs</button>
+                        <button class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm" onclick="sendPredefinedCommand('vm1','monitor_net', this)">Monitor network</button>
+                        <button class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm" onclick="sendPredefinedCommand('vm1','processes', this)">Processes</button>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Utility</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="sendPredefinedCommand('vm1','clear', this)">Clear</button>
+                        <button class="px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="sendPredefinedCommand('vm1','reset', this)">Reset</button>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Custom Commands</div>
+                    <div id="vm1-custom-list" class="flex flex-wrap gap-2 mb-3"></div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input id="vm1-cmd-label" class="px-2 py-1 bg-black border border-slate-700 rounded text-sm" placeholder="Label">
+                        <input id="vm1-cmd-text" class="flex-1 px-2 py-1 bg-black border border-slate-700 rounded text-sm" placeholder="Command (will be sent to terminal)">
+                        <button class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="addCustomCommand('vm1')">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VM1 AI Analysis -->
+            <div class="mt-4 p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Gemini AI Analysis</div>
+                    <button class="px-3 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-xs" onclick="analyzeNow('vm1', this)">Analyze Now</button>
+                </div>
+                <div id="vm1-analysis" class="text-sm text-slate-300 whitespace-pre-wrap max-h-56 overflow-auto"></div>
+                <div id="vm1-warning" class="hidden mt-3 p-3 rounded border border-red-700 bg-red-900/30 text-red-300 text-sm">Warning: Possible DDoS detected — CPU spike observed.</div>
+                <div class="mt-3">
+                    <canvas id="vm1-cpu-chart" height="120"></canvas>
+                </div>
+            </div>
+        </section>
+    <button onclick="runSecurityCheck()">Run Security Check</button>
+<div id="report"></div>
+
+
+        <!-- VM2 Section -->
+        <section class="space-y-4">
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <!-- VM Headerfo -->
+                <div class="px-6 py-4 border-b border-gray-800/50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <h2 class="text-lg font-semibold text-white"></h2>
+                            <div class="flex items-center gap-2 text-sm">
+                                <div id="vm2-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></div>
+                                <span id="vm2-status-text" class="text-gray-400">Initializing...</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="text-xs text-gray-500 font-mono"></span>
+                            <span class="text-xs text-gray-500"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Row -->
+                <div class="px-6 py-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">CPU</div>
+                            <div id="vm2-cpu" class="text-2xl font-mono font-medium text-white">0%</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Memory</div>
+                            <div id="vm2-memory" class="text-2xl font-mono font-medium text-white">0%</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Storage</div>
+                            <div id="vm2-disk" class="text-2xl font-mono font-medium text-white">0%</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                        <div class="metric-card rounded-xl p-4">
+                            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Load Avg</div>
+                            <div id="vm2-load" class="text-2xl font-mono font-medium text-white">0.00</div>
+                            <div class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VM2 Terminal -->
+            <div class="terminal-glass rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800/30">
+                    <div class="flex items-center gap-3">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        </div>
+                        <span class="text-sm text-gray-400 font-mono"></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="text-xs px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700" onclick="toggleSettings('vm2')">Settings</button>
+                        <div class="text-xs text-gray-500 font-mono">SSH Session Active</div>
+                    </div>
+                </div>
+<div id="vm2-settings" class="hidden px-4 py-3 border-b border-gray-800/30 bg-slate-900/40">
+                    <div class="flex flex-wrap items-center gap-4 text-sm">
+                        <label class="inline-flex items-center gap-2"><input id="vm2-autoScroll" type="checkbox" class="accent-blue-500" checked>Auto-scroll</label>
+                        <label class="inline-flex items-center gap-2">Scrollback <input id="vm2-scrollback" type="number" min="200" max="10000" value="2000" class="w-24 px-2 py-1 bg-black border border-slate-700 rounded"></label>
+<label class="inline-flex items-center gap-2"><input id="vm2-cursorBlink" type="checkbox" class="accent-blue-500">Cursor blink</label>
+                        <button class="px-2 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white" onclick="applySettings('vm2')">Apply</button>
+                        <button class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white" onclick="scrollToBottom('vm2')">Scroll to bottom</button>
+                    </div>
+                    <div class="mt-3 text-xs text-slate-400">Quick Connect (runtime only)</div>
+                    <div class="mt-2 grid md:grid-cols-4 gap-2 text-sm">
+                        <input id="vm2-qc-host" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Host/IP">
+                        <input id="vm2-qc-user" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Username">
+                        <input id="vm2-qc-pass" type="password" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Password">
+                        <input id="vm2-qc-port" type="number" value="22" class="px-2 py-1 bg-black border border-slate-700 rounded" placeholder="Port">
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                        <button class="px-2 py-1 rounded bg-green-600 hover:bg-green-500 text-white text-sm" onclick="quickConnect('vm2')">Connect</button>
+                        <button class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="fillQuickConnect('vm2')">Load last</button>
+                    </div>
+                </div>
+                <div class="terminal-container h-96" id="vm2-terminal"></div>
+            </div>
+
+            <!-- VM2 Actions -->
+            <div class="mt-4 grid md:grid-cols-3 gap-3">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Attack Scenarios</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm" onclick="sendPredefinedCommand('vm2','port_scan', this)">Port Scan</button>
+                        <button class="px-3 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm" onclick="sendPredefinedCommand('vm2','brute_force', this)">Brute Force</button>
+                        <button class="px-3 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm" onclick="sendPredefinedCommand('vm2','dir_enum', this)">Dir Enum</button>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Defensive</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm" onclick="sendPredefinedCommand('vm2','check_logs', this)">Check logs</button>
+                        <button class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm" onclick="sendPredefinedCommand('vm2','monitor_net', this)">Monitor network</button>
+                        <button class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm" onclick="sendPredefinedCommand('vm2','processes', this)">Processes</button>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Utility</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="sendPredefinedCommand('vm2','clear', this)">Clear</button>
+                        <button class="px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="sendPredefinedCommand('vm2','reset', this)">Reset</button>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Custom Commands</div>
+                    <div id="vm2-custom-list" class="flex flex-wrap gap-2 mb-3"></div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input id="vm2-cmd-label" class="px-2 py-1 bg-black border border-slate-700 rounded text-sm" placeholder="Label">
+                        <input id="vm2-cmd-text" class="flex-1 px-2 py-1 bg-black border border-slate-700 rounded text-sm" placeholder="Command (will be sent to terminal)">
+                        <button class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white text-sm" onclick="addCustomCommand('vm2')">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VM2 AI Analysis -->
+            <div class="mt-4 p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs uppercase text-slate-400 mb-2">Gemini AI Analysis</div>
+                    <button class="px-3 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-xs" onclick="analyzeNow('vm2', this)">Analyze Now</button>
+                </div>
+                <div id="vm2-analysis" class="text-sm text-slate-300 whitespace-pre-wrap max-h-56 overflow-auto"></div>
+                <div id="vm2-warning" class="hidden mt-3 p-3 rounded border border-red-700 bg-red-900/30 text-red-300 text-sm">Warning: Possible DDoS detected — CPU spike observed.</div>
+                <div class="mt-3">
+                    <canvas id="vm2-cpu-chart" height="120"></canvas>
+                </div>
+            </div>
+            
+        </section>
+    </main>
+
+    <script>
+        // Time and uptime updates
+        let startTime = Date.now();
+        
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('timestamp').textContent = 
+                now.toLocaleString('en-US', {
+                    timeZone: 'UTC',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                }) + ' UTC';
+                
+            const uptime = Math.floor((Date.now() - startTime) / 1000);
+            const hours = Math.floor(uptime / 3600);
+            const minutes = Math.floor((uptime % 3600) / 60);
+            const seconds = uptime % 60;
+            document.getElementById('uptime').textContent = 
+                `Uptime: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        updateTimestamp();
+        setInterval(updateTimestamp, 1000);
+
+        // Global state for charts and ddos flags
+        const VM_CPU = { vm1: [], vm2: [] };
+        const VM_CHART = { vm1: null, vm2: null };
+        const DDOS_FLAG_UNTIL = { vm1: 0, vm2: 0 }; // timestamp ms until which ddos is suspected
+        const CPU_THRESHOLD = 80; // %
+        const WINDOW_POINTS = 10; // last N points to average
+        const DDOS_KEYWORDS = [ /ddos/i, /denial of service/i, /syn flood/i, /udp flood/i, /flood/i ];
+
+        function ensureChart(vmId) {
+            if (VM_CHART[vmId]) return VM_CHART[vmId];
+            const el = document.getElementById(`${vmId}-cpu-chart`);
+            if (!el) return null;
+            const ctx = el.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU %',
+                        data: [],
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56,189,248,0.1)',
+                        tension: 0.2,
+                        pointRadius: 0,
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    animation: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { display: false },
+                        y: { beginAtZero: true, max: 100, grid: { color: 'rgba(148,163,184,0.1)' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+            VM_CHART[vmId] = chart;
+            return chart;
+        }
+
+        function pushCpu(vmId, value) {
+            const arr = VM_CPU[vmId];
+            const now = new Date();
+            arr.push({ t: now, v: value });
+            if (arr.length > 120) arr.shift();
+            const chart = ensureChart(vmId);
+            if (chart) {
+                const labels = chart.data.labels;
+                const data = chart.data.datasets[0].data;
+                labels.push(now.toLocaleTimeString());
+                data.push(value);
+                if (labels.length > 120) { labels.shift(); data.shift(); }
+                chart.update('none');
+            }
+        }
+
+        function avgRecentCpu(vmId, n) {
+            const arr = VM_CPU[vmId];
+            const slice = arr.slice(-n);
+            if (!slice.length) return 0;
+            return slice.reduce((s, x) => s + (Number(x.v) || 0), 0) / slice.length;
+        }
+
+        function setDdosFlag(vmId, seconds=60) {
+            DDOS_FLAG_UNTIL[vmId] = Date.now() + seconds*1000;
+        }
+
+        function maybeWarnDdos(vmId) {
+            const warnEl = document.getElementById(`${vmId}-warning`);
+            const active = Date.now() < DDOS_FLAG_UNTIL[vmId];
+            const avg = avgRecentCpu(vmId, WINDOW_POINTS);
+            if (active && avg >= CPU_THRESHOLD) {
+                if (warnEl) warnEl.classList.remove('hidden');
+            } else {
+                if (warnEl) warnEl.classList.add('hidden');
+            }
+        }
+
+        class VMMonitor {
+            constructor(vmId) {
+                this.vmId = vmId;
+                this.terminal = null;
+                this.terminalWs = null;
+                this.statsWs = null;
+                this.init();
+            }
+            
+            init() {
+                this.setupTerminal();
+                this.connectTerminal();
+                this.connectStats();
+            }
+            
+            setupTerminal() {
+// Authentic Ubuntu terminal colors
+                this.autoScroll = true;
+                this.terminal = new Terminal({
+                    rendererType: 'canvas',
+                    cursorBlink: false,
+                    theme: {
+                        background: '#0a0a0a',
+                        foreground: '#ffffff',
+                        cursor: '#ffffff',
+                        black: '#2e3436',
+                        red: '#cc0000',
+                        green: '#4e9a06',
+                        yellow: '#c4a000',
+                        blue: '#3465a4',
+                        magenta: '#75507b',
+                        cyan: '#06989a',
+                        white: '#d3d7cf',
+                        brightBlack: '#555753',
+                        brightRed: '#ef2929',
+                        brightGreen: '#8ae234',
+                        brightYellow: '#fce94f',
+                        brightBlue: '#729fcf',
+                        brightMagenta: '#ad7fa8',
+                        brightCyan: '#34e2e2',
+                        brightWhite: '#eeeeec'
+                    },
+                    fontSize: 14,
+                    fontFamily: 'JetBrains Mono, Ubuntu Mono, Consolas, monospace',
+                    lineHeight: 1.2,
+                    letterSpacing: 0,
+                    scrollback: 2000,
+                    allowTransparency: true,
+                    minimumContrastRatio: 1
+                });
+                
+                this.terminal.open(document.getElementById(`${this.vmId}-terminal`));
+                this.fitTerminal();
+
+
+// Track auto-scroll state based on user scroll position
+                this.terminal.onScroll(() => {
+                    const vp = this.terminal.element?.querySelector('.xterm-viewport');
+                    if (!vp) return;
+                    const atBottom = vp.scrollTop + vp.clientHeight >= vp.scrollHeight - 5;
+                    this.autoScroll = atBottom;
+                });
+
+                this.terminal.onData(data => {
+                    if (this.terminalWs && this.terminalWs.readyState === WebSocket.OPEN) {
+                        this.terminalWs.send(JSON.stringify({
+                            type: 'terminal_input',
+                            data: data
+                        }));
+                    }
+                });
+            }
+            
+            fitTerminal() {
+                const container = this.terminal.element.parentElement;
+                if (container) {
+                    const containerWidth = container.clientWidth - 20;
+                    const containerHeight = container.clientHeight - 20;
+                    
+                    const cols = Math.floor(containerWidth / 9);
+                    const rows = Math.floor(containerHeight / 17);
+                    
+                    this.terminal.resize(Math.max(cols, 80), Math.max(rows, 24));
+                }
+            }
+            
+            connectTerminal() {
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${wsProtocol}//${window.location.host}/ws/terminal/${this.vmId}`;
+                
+                this.terminalWs = new WebSocket(wsUrl);
+                
+
+                this.terminalWs.onopen = () => {
+                    this.updateStatus('connected');
+                    this.terminal.write('\x1b[2J\x1b[H');
+                    this.terminal.write(`\x1b[32mConnected to ${this.vmId} terminal session\x1b[0m\r\n`);
+                    this.terminal.write(`\x1b[90m${new Date().toISOString()} - Terminal Nexus v2.1.0\x1b[0m\r\n\r\n`);
+                };
+                
+this.terminalWs.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'terminal_output') {
+                        this.terminal.write(message.data || '');
+                        if (this.autoScroll) this.terminal.scrollToBottom();
+                    } else if (message.type === 'analysis') {
+                        this.updateAnalysis(message.data);
+                    } else if (message.type === 'error') {
+                        this.terminal.write(`\r\n\x1b[31mConnection error: ${message.message}\x1b[0m\r\n`);
+                        if (this.autoScroll) this.terminal.scrollToBottom();
+                    }
+                };
+                
+                this.terminalWs.onclose = () => {
+                    this.updateStatus('disconnected');
+                    this.terminal.write(`\r\n\x1b[33mConnection lost. Reconnecting...\x1b[0m\r\n`);
+                    setTimeout(() => this.connectTerminal(), 3000);
+                };
+                
+                this.terminalWs.onerror = () => {
+                    this.updateStatus('error');
+                };
+            }
+            
+            connectStats() {
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${wsProtocol}//${window.location.host}/ws/stats/${this.vmId}`;
+                
+                this.statsWs = new WebSocket(wsUrl);
+                
+                this.statsWs.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'stats') {
+                        this.updateStats(message.data);
+                        // push into CPU graph and maybe warn
+                        if (typeof message.data.cpu === 'number') {
+                            pushCpu(this.vmId, message.data.cpu);
+                            maybeWarnDdos(this.vmId);
+                        }
+                    }
+                };
+                
+                this.statsWs.onclose = () => {
+                    setTimeout(() => this.connectStats(), 5000);
+                };
+            }
+            
+            updateStatus(status) {
+                const dot = document.getElementById(`${this.vmId}-status-dot`);
+                const text = document.getElementById(`${this.vmId}-status-text`);
+                
+                switch(status) {
+                    case 'connected':
+                        dot.className = 'w-2 h-2 rounded-full bg-green-400 pulse-dot';
+                        text.textContent = 'Online';
+                        text.className = 'status-online text-sm';
+                        break;
+                    case 'disconnected':
+                        dot.className = 'w-2 h-2 rounded-full bg-yellow-500 pulse-dot';
+                        text.textContent = 'Reconnecting';
+                        text.className = 'text-yellow-400 text-sm';
+                        break;
+                    case 'error':
+                        dot.className = 'w-2 h-2 rounded-full bg-red-500 pulse-dot';
+                        text.textContent = 'Error';
+                        text.className = 'status-offline text-sm';
+                        break;
+                }
+            }
+            
+            updateAnalysis(analysis) {
+                const panel = document.getElementById(`${this.vmId}-analysis`);
+                if (!panel) return;
+                if (analysis.status === 'disabled') {
+                    panel.textContent = 'AI analysis is disabled (missing API key).';
+                    return;
+                }
+                if (analysis.status === 'error') {
+                    panel.textContent = `Analysis error: ${analysis.message || 'unknown error'}`;
+                    return;
+                }
+                const lines = [];
+                const textBlob = [analysis.security_analysis || '']
+                    .concat(Array.isArray(analysis.attack_detection)? analysis.attack_detection : [])
+                    .join(' ');
+                if (DDOS_KEYWORDS.some(rx => rx.test(textBlob))) {
+                    setDdosFlag(this.vmId, 90);
+                }
+                if (analysis.security_analysis) {
+                    lines.push(`Analysis: ${analysis.security_analysis}`);
+                }
+                if (Array.isArray(analysis.attack_detection) && analysis.attack_detection.length) {
+                    lines.push('Detections:');
+                    analysis.attack_detection.forEach((d, i) => lines.push(`  - ${d}`));
+                }
+                if (Array.isArray(analysis.recommendations) && analysis.recommendations.length) {
+                    lines.push('Recommendations:');
+                    analysis.recommendations.forEach((r, i) => lines.push(`  - ${r}`));
+                }
+                panel.textContent = lines.join('\n');
+                // Update warning visibility based on latest CPU
+                maybeWarnDdos(this.vmId);
+            }
+            
+            updateStats(stats) {
+                this.updateMetric(`${this.vmId}-cpu`, stats.cpu, '%');
+                this.updateMetric(`${this.vmId}-memory`, stats.memory, '%');
+                this.updateMetric(`${this.vmId}-disk`, stats.disk, '%');
+                this.updateMetric(`${this.vmId}-load`, stats.load, '', 2);
+            }
+            
+            updateMetric(elementId, value, suffix, decimals = 0) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    const displayValue = typeof value === 'number' 
+                        ? value.toFixed(decimals) + suffix
+                        : value + suffix;
+                    element.textContent = displayValue;
+                }
+            }
+        }
+
+        // Initialize when DOM loads
+        function getMonitor(vmId) {
+            return vmId === 'vm1' ? window.vm1Monitor : window.vm2Monitor;
+        }
+        function toggleSettings(vmId) {
+            const panel = document.getElementById(`${vmId}-settings`);
+            if (!panel) return;
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                loadSettings(vmId, true);
+            }
+        }
+        function saveSettings(vmId) {
+const data = {
+                autoScroll: document.getElementById(`${vmId}-autoScroll`).checked,
+                scrollback: parseInt(document.getElementById(`${vmId}-scrollback`).value || '2000', 10),
+                cursorBlink: document.getElementById(`${vmId}-cursorBlink`).checked,
+            };
+            localStorage.setItem(`terminalSettings_${vmId}`, JSON.stringify(data));
+            return data;
+        }
+        function loadSettings(vmId, applyToUI=false) {
+            try {
+                const raw = localStorage.getItem(`terminalSettings_${vmId}`);
+                if (!raw) return null;
+                const s = JSON.parse(raw);
+if (applyToUI) {
+                    const a = document.getElementById(`${vmId}-autoScroll`);
+                    const sb = document.getElementById(`${vmId}-scrollback`);
+                    const cb = document.getElementById(`${vmId}-cursorBlink`);
+                    if (a) a.checked = !!s.autoScroll;
+                    if (sb && s.scrollback) sb.value = s.scrollback;
+                    if (cb) cb.checked = !!s.cursorBlink;
+                }
+                return s;
+            } catch { return null; }
+        }
+        function applySettings(vmId) {
+            const mon = getMonitor(vmId);
+            if (!mon || !mon.terminal) return;
+const saved = saveSettings(vmId) || {};
+            const auto = saved.autoScroll ?? document.getElementById(`${vmId}-autoScroll`).checked;
+            const sb = saved.scrollback ?? parseInt(document.getElementById(`${vmId}-scrollback`).value || '2000', 10);
+            const blink = saved.cursorBlink ?? document.getElementById(`${vmId}-cursorBlink`).checked;
+            mon.autoScroll = !!auto;
+            try { mon.terminal.setOption('scrollback', Math.max(200, Math.min(10000, sb))); } catch {}
+            try { mon.terminal.setOption('cursorBlink', !!blink); } catch {}
+            if (mon.autoScroll) mon.terminal.scrollToBottom();
+        }
+        function scrollToBottom(vmId) {
+            const mon = getMonitor(vmId);
+            if (mon && mon.terminal) {
+                mon.terminal.scrollToBottom();
+                mon.autoScroll = true;
+                const a = document.getElementById(`${vmId}-autoScroll`);
+                if (a) a.checked = true;
+                saveSettings(vmId);
+            }
+        }
+        async function quickConnect(vmId) {
+            const host = document.getElementById(`${vmId}-qc-host`).value.trim();
+            const username = document.getElementById(`${vmId}-qc-user`).value.trim();
+            const password = document.getElementById(`${vmId}-qc-pass`).value;
+            const port = parseInt(document.getElementById(`${vmId}-qc-port`).value || '22', 10) || 22;
+            if (!host || !username) return;
+            const btns = document.querySelectorAll(`#${vmId}-settings button`);
+            btns.forEach(b => b.disabled = true);
+            try {
+                localStorage.setItem(`quickConnect_${vmId}`, JSON.stringify({ host, username, port }));
+                const res = await fetch(`/api/vm-connect/${vmId}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host, username, password, port })
+                });
+                const data = await res.json();
+                if (!data.ok) alert('Connect failed: ' + (data.error || 'unknown'));
+            } catch (e) {
+                alert('Connect error');
+            } finally {
+                btns.forEach(b => b.disabled = false);
+            }
+        }
+        function fillQuickConnect(vmId) {
+            try {
+                const raw = localStorage.getItem(`quickConnect_${vmId}`);
+                if (!raw) return;
+                const v = JSON.parse(raw);
+                if (v.host) document.getElementById(`${vmId}-qc-host`).value = v.host;
+                if (v.username) document.getElementById(`${vmId}-qc-user`).value = v.username;
+                if (v.port) document.getElementById(`${vmId}-qc-port`).value = v.port;
+            } catch {}
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            window.vm1Monitor = new VMMonitor('vm1');
+            window.vm2Monitor = new VMMonitor('vm2');
+
+            // Apply persisted settings on load
+            ['vm1','vm2'].forEach(id => {
+                const s = loadSettings(id, true);
+if (s) {
+                    const mon = id === 'vm1' ? window.vm1Monitor : window.vm2Monitor;
+                    mon.autoScroll = !!s.autoScroll;
+                    try { mon.terminal.setOption('scrollback', Math.max(200, Math.min(10000, s.scrollback || 2000))); } catch {}
+                    try { mon.terminal.setOption('cursorBlink', !!s.cursorBlink); } catch {}
+                    if (mon.autoScroll) mon.terminal.scrollToBottom();
+                }
+                renderCustomCommands(id);
+            });
+            
+            // Handle terminal resizing
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    window.vm1Monitor.fitTerminal();
+                    window.vm2Monitor.fitTerminal();
+                }, 200);
+            });
+        });
+
+        // Predefined command mapping (safe defaults for local testing)
+        const COMMANDS = {
+            port_scan: 'nmap -sS -Pn -p 1-100 127.0.0.1\n',
+            brute_force: 'echo "Simulating brute force attempt" && sleep 1 && echo "(Use real tool in lab)"\n',
+            dir_enum: 'echo "Enumerating directories" && find / -maxdepth 2 -type d 2>/dev/null | head -n 20\n',
+            check_logs: 'sudo tail -n 100 /var/log/auth.log\n',
+            monitor_net: 'ss -tulnp | head -n 25\n',
+            processes: 'ps aux --sort=-%mem | head -n 15\n',
+            clear: '\x1b[2J\x1b[H',
+            reset: 'reset\n'
+        };
+
+        async function analyzeNow(vmId, btnEl) {
+            const prev = btnEl.textContent;
+            btnEl.disabled = true; btnEl.textContent = 'Analyzing...';
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vm_id: vmId })
+                });
+                const data = await res.json();
+                const panel = document.getElementById(`${vmId}-analysis`);
+                if (!data.ok) {
+                    panel.textContent = `Manual analysis error: ${data.error || 'unknown error'}`;
+                } else {
+                    const a = data.analysis || {};
+                    const lines = [];
+                    const textBlob = [a.security_analysis || '']
+                      .concat(Array.isArray(a.attack_detection)? a.attack_detection : [])
+                      .join(' ');
+                    if (DDOS_KEYWORDS.some(rx => rx.test(textBlob))) {
+                        setDdosFlag(vmId, 90);
+                    }
+                    if (a.security_analysis) lines.push(`Analysis: ${a.security_analysis}`);
+                    if (Array.isArray(a.attack_detection) && a.attack_detection.length) {
+                        lines.push('Detections:');
+                        a.attack_detection.forEach(d => lines.push(`  - ${d}`));
+                    }
+                    if (Array.isArray(a.recommendations) && a.recommendations.length) {
+                        lines.push('Recommendations:');
+                        a.recommendations.forEach(r => lines.push(`  - ${r}`));
+                    }
+                    panel.textContent = lines.join('\n');
+                    maybeWarnDdos(vmId);
+                }
+            } catch (e) {
+                const panel = document.getElementById(`${vmId}-analysis`);
+                panel.textContent = `Manual analysis failed: ${e}`;
+            } finally {
+                btnEl.disabled = false; btnEl.textContent = prev;
+            }
+        }
+
+        function runCommand(vmId, cmd, btnEl) {
+            if (!cmd) return;
+            const monitor = vmId === 'vm1' ? window.vm1Monitor : window.vm2Monitor;
+            if (!monitor || !monitor.terminalWs || monitor.terminalWs.readyState !== WebSocket.OPEN) return;
+            const prev = btnEl ? btnEl.textContent : null;
+            if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Running...'; }
+            try {
+                monitor.terminalWs.send(JSON.stringify({ type: 'terminal_input', data: cmd.endsWith('\n')? cmd : cmd + '\n' }));
+                setTimeout(() => {
+                    if (btnEl) { btnEl.disabled = false; btnEl.textContent = prev; }
+                }, 1200);
+            } catch (e) {
+                if (btnEl) { btnEl.disabled = false; btnEl.textContent = prev; }
+            }
+        }
+        function renderCustomCommands(vmId) {
+            const holder = document.getElementById(`${vmId}-custom-list`);
+            if (!holder) return;
+            holder.innerHTML = '';
+            const raw = localStorage.getItem(`customCmds_${vmId}`);
+            let list = [];
+            try { list = raw? JSON.parse(raw) : []; } catch { list = []; }
+            list.forEach((item, idx) => {
+                const b = document.createElement('button');
+                b.className = 'px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white text-xs';
+                b.textContent = item.label || ('Cmd ' + (idx+1));
+                b.onclick = () => runCommand(vmId, item.cmd, b);
+                holder.appendChild(b);
+            });
+        }
+        function addCustomCommand(vmId) {
+            const labelEl = document.getElementById(`${vmId}-cmd-label`);
+            const cmdEl = document.getElementById(`${vmId}-cmd-text`);
+            const label = (labelEl?.value || '').trim();
+            const cmd = (cmdEl?.value || '').trim();
+            if (!cmd) return;
+            let list = [];
+            try { const raw = localStorage.getItem(`customCmds_${vmId}`); list = raw? JSON.parse(raw) : []; } catch {}
+            list.push({ label: label || 'Command', cmd });
+            localStorage.setItem(`customCmds_${vmId}`, JSON.stringify(list.slice(-20)));
+            renderCustomCommands(vmId);
+            if (labelEl) labelEl.value = '';
+            if (cmdEl) cmdEl.value = '';
+        }
+        function sendPredefinedCommand(vmId, key, btnEl) {
+            const cmd = COMMANDS[key];
+            if (!cmd) return;
+            const monitor = vmId === 'vm1' ? window.vm1Monitor : window.vm2Monitor;
+            if (!monitor || !monitor.terminalWs || monitor.terminalWs.readyState !== WebSocket.OPEN) return;
+
+            const prev = btnEl.textContent;
+            btnEl.disabled = true;
+            btnEl.textContent = 'Running...';
+
+            try {
+                monitor.terminalWs.send(JSON.stringify({ type: 'terminal_input', data: cmd }));
+                setTimeout(() => {
+                    btnEl.disabled = false;
+                    btnEl.textContent = prev;
+                }, 1500);
+            } catch (e) {
+                btnEl.disabled = false;
+                btnEl.textContent = prev;
+            }
+        }
+        async function runSecurityCheck() {
+  // Show loading state
+  document.getElementById("report").innerHTML = "<em>Running security check...</em>";
+  
+  try {
+    let res = await fetch("/security-check");
+    let data = await res.json();
+
+    // Build report
+    let html = `
+      <h2>Attack Detected</h2>
+      <p>${data.attack_detected}</p>
+      <h2>Evidence</h2>
+      <ul>${data.evidence.map(e => `<li>${e}</li>`).join("")}</ul>
+      <h2>Recommendations</h2>
+      <ul>${data.recommendations.map(r => `<li>${r}</li>`).join("")}</ul>
+      <h2>Metrics</h2>
+      <canvas id="metricsChart" width="400" height="200"></canvas>
+    `;
+    document.getElementById("report").innerHTML = html;
+
+    // Draw chart
+    const ctx = document.getElementById('metricsChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ["Failed SSH Logins", "Root Logins", "Unusual Processes"],
+        datasets: [{
+          label: 'Suspicious Events',
+          data: [
+            data.metrics.failed_ssh_logins,
+            data.metrics.root_logins,
+            data.metrics.unusual_processes
+          ],
+          backgroundColor: ['#e74c3c', '#f39c12', '#3498db']
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+  } catch (err) {
+    document.getElementById("report").innerHTML = "<p style='color:red'>Error running security check</p>";
+    console.error(err);
+  }
+}
+    </script>
+</body>
+</html>
