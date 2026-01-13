@@ -1,0 +1,54 @@
+INFO:     Started server process [10117]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42464 - "WebSocket /ws/terminal/vm1" [accepted]
+ERROR:root:Failed to connect to vm1: timed out
+INFO:     connection open
+INFO:     127.0.0.1:40464 - "WebSocket /ws/stats/vm1" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:40468 - "WebSocket /ws/terminal/vm2" [accepted]
+ERROR:root:Failed to connect to vm2: timed out
+INFO:     connection open
+INFO:     127.0.0.1:40136 - "WebSocket /ws/stats/vm2" [accepted]
+INFO:     connection open
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1762455405.497188   10810 alts_credentials.cc:93] ALTS creds ignored. Not running on GCP and untrusted ALTS is not enabled.
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:49540 - "WebSocket /ws/terminal/vm1" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49554 - "WebSocket /ws/stats/vm1" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49562 - "WebSocket /ws/terminal/vm2" [accepted]
+ERROR:root:Failed to connect to vm2: timed out
+INFO:     connection open
+INFO:     127.0.0.1:49566 - "WebSocket /ws/stats/vm2" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:35506 - "WebSocket /ws/terminal/vm1" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:35522 - "WebSocket /ws/stats/vm1" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50524 - "WebSocket /ws/terminal/vm2" [accepted]
+ERROR:root:Failed to connect to vm2: timed out
+INFO:     connection open
+INFO:     127.0.0.1:50534 - "WebSocket /ws/stats/vm2" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:51582 - "WebSocket /ws/terminal/vm1" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51594 - "WebSocket /ws/stats/vm1" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51606 - "WebSocket /ws/terminal/vm2" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:46736 - "WebSocket /ws/stats/vm2" [accepted]
+INFO:     connection open
